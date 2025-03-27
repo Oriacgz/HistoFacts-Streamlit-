@@ -444,7 +444,7 @@ def show_welcome_page():
         # Use Streamlit's built-in container
         with st.container():
             # Use a cheerful image
-            st.image("quiz.png", use_container_width=True)
+            st.image("assets/quiz.png", use_container_width=True)
             
             # Add a fun fact
             with st.expander("📚 Did you know?"):

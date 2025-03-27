@@ -342,8 +342,8 @@ def apply_theme(theme_choice):
 
 # Initialize session state variables
 def init_dashboard_state():
-    if 'page' not in st.session_state:
-        st.session_state.page = 'home'
+    if 'dashboard_page' not in st.session_state:
+        st.session_state.dashboard_page = 'home'
     if 'theme' not in st.session_state:
         st.session_state.theme = 'Vintage'
     if 'favorites' not in st.session_state:
@@ -389,16 +389,22 @@ def main():
         """, unsafe_allow_html=True)
         
         # Navigation buttons
-        if st.button("🏠 Home"):
-            st.session_state.page = 'home'
-        if st.button("📅 Timeline"):
-            st.session_state.page = 'timeline'
-        if st.button("🔍 Search & Explore"):
-            st.session_state.page = 'search'
-        if st.button("❓ Quiz"):
+        if st.button("🏠 Home", key="dash_home"):
+            st.session_state.dashboard_page = 'home'
+            st.rerun()
+        if st.button("📅 Timeline", key="dash_timeline"):
+            st.session_state.dashboard_page = 'timeline'
+            st.rerun()
+        if st.button("🔍 Search & Explore", key="dash_search"):
+            st.session_state.dashboard_page = 'search'
+            st.rerun()
+        if st.button("❓ Quiz", key="dash_quiz"):
             # Return to main app and switch to quiz page
             st.session_state.page = "Quiz"
             st.session_state.quiz_state = "welcome"
+            st.rerun()
+        if st.button("🏠 Back to Main", key="dash_main"):
+            st.session_state.page = "Home"
             st.rerun()
         
         # Theme selector
@@ -409,7 +415,7 @@ def main():
         
         if theme_option != st.session_state.theme:
             st.session_state.theme = theme_option
-            st.experimental_rerun()
+            st.rerun()
         
         # Check if today is a significant date
         todays_facts = fetch_indian_historical_facts(date=today)
@@ -421,7 +427,7 @@ def main():
                 st.markdown(f"- {year}: {fact['fact'][:50]}...")
 
     # Main content based on selected page
-    if st.session_state.page == 'home':
+    if st.session_state.dashboard_page == 'home':
         # Home page / Main Dashboard
         st.title("HistoFacts: Indian Historical Explorer")
         st.subheader("Discover the Rich Tapestry of Indian History")
@@ -493,8 +499,8 @@ def main():
                 # Since the onclick doesn't work in Streamlit, add a button
                 if st.button(f"Explore {category}", key=f"cat_{category}"):
                     st.session_state.selected_category = category
-                    st.session_state.page = 'search'
-                    st.experimental_rerun()
+                    st.session_state.dashboard_page = 'search'
+                    st.rerun()
         
         # Quick stats
         st.markdown("## Quick Stats")
@@ -544,7 +550,7 @@ def main():
             fig = px.pie(category_df, values="Count", names="Category", hole=0.4)
             st.plotly_chart(fig, use_container_width=True)
 
-    elif st.session_state.page == 'timeline':
+    elif st.session_state.dashboard_page == 'timeline':
         st.title("Historical Timeline")
         st.write("Explore Indian historical events through an interactive timeline.")
         
@@ -639,7 +645,7 @@ def main():
         else:
             st.info("No events found with the selected filters. Try different criteria.")
 
-    elif st.session_state.page == 'search':
+    elif st.session_state.dashboard_page == 'search':
         st.title("Search & Explore")
         st.write("Search for historical events by keyword, date, or category.")
         
@@ -745,9 +751,6 @@ def main():
                     if st.button("Remove from Favorites", key=f"remove_fav_{i}"):
                         st.session_state.favorites.remove(fact)
                         st.success("Removed from favorites!")
-                        st.experimental_rerun()
+                        st.rerun()
             else:
                 st.info("You haven't added any favorites yet. Explore historical facts and add them to your favorites!")
-
-if __name__ == "__main__":
-    main()
