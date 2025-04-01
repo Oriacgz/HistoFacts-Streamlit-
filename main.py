@@ -11,8 +11,8 @@ sys.path.append(os.path.dirname(__file__))
 
 # Set page configuration
 st.set_page_config(
-    page_title="HISTOFACT",
-    page_icon="🏛️",
+    page_title="HISTOFACTS",
+    page_icon="assets/icon.png",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -26,6 +26,12 @@ if 'user_email' not in st.session_state:
     st.session_state.user_email = None
 if 'quiz_state' not in st.session_state:
     st.session_state.quiz_state = "welcome"
+if 'favorites' not in st.session_state:
+    st.session_state.favorites = []
+if 'bookmarks' not in st.session_state:
+    st.session_state.bookmarks = []
+if 'cached_events' not in st.session_state:
+    st.session_state.cached_events = {}
 
 # Import modules after initializing session state
 from pages.login import create_user, login_user
@@ -49,7 +55,7 @@ def apply_background():
 # Sidebar navigation
 def sidebar():
     with st.sidebar:
-        st.title("🏛️ HISTOFACT")
+        st.title("🏛️ HISTOFACTS")
         st.markdown("### Explore History")
 
         if st.session_state.logged_in:
@@ -59,6 +65,12 @@ def sidebar():
             if st.button("📚 Quiz", key="quiz_button"):
                 st.session_state.page = "Quiz"
                 st.session_state.quiz_state = "welcome"
+                st.rerun()
+            if st.button("⭐ Favorites", key="favorites_button"):
+                st.session_state.page = "Favorites"
+                st.rerun()
+            if st.button("🔖 Bookmarks", key="bookmarks_button"):
+                st.session_state.page = "Bookmarks"
                 st.rerun()
             if st.button("🚪 Logout", key="logout_button"):
                 st.session_state.logged_in = False
@@ -77,7 +89,7 @@ def custom_login_user():
     if login_successful:
         st.session_state.logged_in = True
         st.session_state.page = "Dashboard"  # Redirect to Dashboard automatically
-        st.experimental_rerun()  # Refresh the page immediately
+        st.rerun()  # Refresh the page immediately
 
 # Main application
 def main():
@@ -95,8 +107,11 @@ def main():
             custom_login_user()  # Use modified login function
     else:
         if st.session_state.page == "Dashboard":
-            dashboard.init_dashboard_state()
             dashboard.main()
+        elif st.session_state.page == "Favorites":
+            dashboard.show_favorites()
+        elif st.session_state.page == "Bookmarks":
+            dashboard.show_bookmarks()
         elif st.session_state.page == "Quiz":
             if st.session_state.quiz_state == "welcome":
                 show_quiz_welcome()

@@ -11,7 +11,10 @@ load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyAt0D0WxtfNVrGSUwmpnsnIQ8o-g9XiN_o")
 
 # Configure Google Gemini API
-genai.configure(api_key=API_KEY)
+try:
+    genai.configure(api_key=API_KEY)
+except Exception as e:
+    st.error(f"Error configuring Gemini API: {e}")
 
 # Simplified CSS with minimal styling
 def apply_custom_css():

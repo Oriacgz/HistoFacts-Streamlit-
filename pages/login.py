@@ -132,7 +132,7 @@ def create_user():
                                     if check_login(email, password):
                                         st.session_state.logged_in = True
                                         st.session_state.user_email = email
-                                        st.session_state.page = "Home"
+                                        st.session_state.page = "Dashboard"
                                         st.rerun()
                     elif not name:
                         st.error("Please enter your name")
@@ -190,7 +190,7 @@ def login_user():
                             st.success(f"Welcome TO HISTOFACTS!!!")
                             st.session_state.logged_in = True
                             st.session_state.user_email = email
-                            st.session_state.page = "dashboard"
+                            st.session_state.page = "Dashboard"
                             st.rerun()
                         else:
                             st.error("❌ Invalid email and password")
