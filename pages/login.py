@@ -9,7 +9,7 @@ def create_connection():
         conn = pymysql.connect(
             host='localhost',
             user='root',
-            password='@nirmala2005',
+            password='Oriacgz234456#',
             database='mini'
         )
         print("Connection established")
@@ -107,14 +107,13 @@ def create_user():
                 email = st.text_input("Email")
                 password = st.text_input("Password", type="password")
                 confirm_password = st.text_input("Confirm Password", type="password")
-                agree = st.checkbox("I agree to the Terms and Conditions")
                 
                 c1, c2, c3 = st.columns([6, 3, 6])
                 with c2:
                     submit = st.form_submit_button("Submit")
 
                 if submit:
-                    if name and email and password and confirm_password and agree:
+                    if name and email and password and confirm_password :
                         # Validate email
                         if not validate_email(email):
                             st.error("Please enter a valid email address")
@@ -142,8 +141,6 @@ def create_user():
                         st.error("Please enter a password")
                     elif not confirm_password:
                         st.error("Please confirm your password")
-                    elif not agree:
-                        st.error("You must agree to the Terms and Conditions before registering")
                     else:
                         st.error("Please fill in all required fields")
 

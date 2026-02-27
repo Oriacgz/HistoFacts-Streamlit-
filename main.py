@@ -2,14 +2,15 @@ import streamlit as st
 import os
 import sys
 from dotenv import load_dotenv
+import google.generativeai as genai
 
-# Load environment variables
+# Load environment variables and configure Gemini API
 load_dotenv()
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyAt0D0WxtfNVrGSUwmpnsnIQ8o-g9XiN_o")
+genai.configure(api_key=GEMINI_API_KEY)
 
-# Add the current directory to the path so we can import our modules
 sys.path.append(os.path.dirname(__file__))
 
-# Set page configuration
 st.set_page_config(
     page_title="HISTOFACTS",
     page_icon="assets/icon.png",
@@ -17,7 +18,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Initialize session state
 if 'page' not in st.session_state:
     st.session_state.page = "Sign-Up"
 if 'logged_in' not in st.session_state:
@@ -32,6 +32,11 @@ if 'bookmarks' not in st.session_state:
     st.session_state.bookmarks = []
 if 'cached_events' not in st.session_state:
     st.session_state.cached_events = {}
+# Initialize search-related session state variables
+if 'search_query' not in st.session_state:
+    st.session_state.search_query = ""
+if 'search_results' not in st.session_state:
+    st.session_state.search_results = []
 
 # Import modules after initializing session state
 from pages.login import create_user, login_user
@@ -42,8 +47,11 @@ import pages.dashboard as dashboard
 def apply_background():
     page_bg_img = """
     <style>
+    body{
+    color: black;
+    }
     .stApp {
-        background-image: url("https://unblast.com/wp-content/uploads/2021/01/Space-Background-Images-1024x682.jpg");
+        background-image:url("https://cdn.wallpapersafari.com/8/17/ictgJL.jpg");
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
@@ -56,7 +64,7 @@ def apply_background():
 def sidebar():
     with st.sidebar:
         st.title("🏛️ HISTOFACTS")
-        st.markdown("### Explore History")
+        st.markdown("## Explore History")
 
         if st.session_state.logged_in:
             if st.button("🏠 Home", key="home_button"):
@@ -91,20 +99,19 @@ def custom_login_user():
         st.session_state.page = "Dashboard"  # Redirect to Dashboard automatically
         st.rerun()  # Refresh the page immediately
 
-# Main application
 def main():
     sidebar()
 
-    # Apply background image only on login pages
+    # Apply background only on login pages
     if st.session_state.page in ["Sign-Up", "Sign-In"]:
         apply_background()
 
-    # Routing logic
+    # Handle different pages
     if not st.session_state.logged_in:
         if st.session_state.page == "Sign-Up":
             create_user()
         elif st.session_state.page == "Sign-In":
-            custom_login_user()  # Use modified login function
+            custom_login_user()  
     else:
         if st.session_state.page == "Dashboard":
             dashboard.main()

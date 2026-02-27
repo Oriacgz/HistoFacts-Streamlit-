@@ -22,14 +22,14 @@ def apply_custom_css():
     <style>
         /* Simple styling for text elements */
         h1 {
-            color: #1E3A8A;
+            color: 	white;
             font-family: 'Georgia', serif;
             font-weight: 700;
             margin-bottom: 10px;
         }
         
         h2, h3 {
-            color: #1E3A8A;
+            color: white;
             font-family: 'Georgia', serif;
         }
         
@@ -38,7 +38,7 @@ def apply_custom_css():
         .quiz-title {
             font-size: 2.5em;
             font-weight: bold;
-            color: #2E86C1;
+            color: 	#1fd400;
             text-align: center;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
             margin-bottom: 10px;
@@ -447,7 +447,7 @@ def show_welcome_page():
         # Use Streamlit's built-in container
         with st.container():
             # Use a cheerful image
-            st.image("assets/quiz.png", use_container_width=True)
+            st.image("assets/quiz.png")
             
             # Add a fun fact
             with st.expander("📚 Did you know?"):

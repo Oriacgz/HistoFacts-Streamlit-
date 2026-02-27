@@ -19,7 +19,8 @@ from utils.historical_api import (
     display_event_card,
     is_indian_event,
     toggle_favorite,
-    toggle_bookmark
+    toggle_bookmark,
+    search_historical_events
 )
 
 # Add custom CSS with improved styling and dark mode support
@@ -76,12 +77,18 @@ def add_custom_css():
         font-family: 'Lora', Georgia, serif;
     }
     
-    h1, h2, h3, h4, h5, h6 {
+    h3,h4, h5, h6 {
         font-family: 'Playfair Display', serif;
         font-weight: 700;
-        color: white;
+        color: #142231;
     }
-    
+    h1,h2{
+       font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    color: white;         
+                }
+                
+
     .dark-mode h1, .dark-mode h2, .dark-mode h3, .dark-mode h4, .dark-mode h5, .dark-mode h6 {
         color: var(--text-light);
     }
@@ -203,6 +210,7 @@ def add_custom_css():
         transform: translateY(-2px);
     }
     
+    
     .stTextInput input {
         background-color: rgba(255, 255, 255, 0.15);
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -213,7 +221,7 @@ def add_custom_css():
     }
     
     .stTextInput input:focus {
-        background-color: rgba(255, 255, 255, 0.25);
+        background-color: --primary-medium);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         border-color: var(--accent-gold);
     }
@@ -299,7 +307,7 @@ def add_custom_css():
     .highlight {
         font-size: 1.5rem;
         font-weight: 500;
-        color: #142231;
+        color: #144231;
         margin: 0;
         letter-spacing: 0.5px;
         line-height: 1.4;
@@ -341,7 +349,7 @@ def add_custom_css():
     
     .section-header i {
         font-size: 32px;
-        color: var(--primary-dark);
+        color: var(--primary-dark); !important
         background-color: rgba(255, 255, 255, 0.5);
         width: 50px;
         height: 50px;
@@ -354,7 +362,7 @@ def add_custom_css():
     }
     
     .dark-mode .section-header i {
-        color: --primary-dark);
+        color: var(--primary-dark);
         background-color: rgba(255, 255, 255, 0.1);
     }
     
@@ -365,7 +373,7 @@ def add_custom_css():
     }
     
     .dark-mode .section-header h3 {
-        color: --primary-dark;
+        color: var(--primary-dark);
     }
     
     .stTabs [data-baseweb="tab-list"] {
@@ -392,14 +400,14 @@ def add_custom_css():
     }
     
     .stAlert {
-        background-color: var(--background-cream);
-        color: var(--text-dark);
+        background-color: var(--background-medium) !important;
+        color: #144231 !important;
         border-radius: var(--border-radius);
         border-left: 4px solid var(--primary-medium);
     }
     
     .dark-mode .stAlert {
-        background-color: rgba(30, 30, 30, 0.7);
+        background-color: var(--background-medium) !important;
         color: var(--text-light);
     }
     
@@ -414,6 +422,7 @@ def add_custom_css():
         border-radius: var(--border-radius);
         padding: 20px;
         margin-bottom: 15px;
+        color:white;
         box-shadow: var(--shadow-md);
         transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
     }
@@ -434,12 +443,12 @@ def add_custom_css():
     .event-year {
         font-family: 'Playfair Display', serif;
         font-size: 1.4rem;
-        color: --primary-dark;
+        color: var(--primary-dark) !important;
         margin: 0 0 8px 0;
     }
     
     .dark-mode .event-year {
-        color: --primary-dark ;
+        color: var(--primary-dark) !important;
     }
     
     .event-text {
@@ -448,7 +457,7 @@ def add_custom_css():
     }
     
     .dark-mode .event-text {
-        color: --primary-dark;
+        color: var(--primary-dark);
     }
     
     .event-actions {
@@ -482,7 +491,7 @@ def add_custom_css():
     
     /* Button styling for favorite and bookmark */
     .stButton > button {
-        background-color: var(--primary-light);
+        background-color: var(--primary-medium);
         color: white !important;
         border: none;
         border-radius: 20px;
@@ -858,15 +867,6 @@ def create_header():
     </div>
     """, unsafe_allow_html=True)
     
-    # Header with logo and search
-    st.markdown("""
-    <div class="header">
-        <div class="logo" style="margin-left:30px;">
-            <h1>HISTOFACTS</h1>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-    
     # Date picker and search bar
     col1, col2, col3 = st.columns([2, 1, 1])
     with col1:
@@ -879,13 +879,45 @@ def create_header():
             st.rerun()
     
     with col2:
-        search_query = st.text_input("search", placeholder="Search historical facts...", key="search_input")
-        if search_query and search_query != st.session_state.get('search_query', ""):
-            st.session_state.search_query = search_query
-            st.session_state.search_results = search_historical_events(search_query)
-            st.session_state.page = "search_results"
-            st.rerun()
-    
+        # Use a form for search to prevent automatic rerun
+        with st.form(key="search_form"):
+            search_query = st.text_input("Search", placeholder="Search historical facts...", key="search_input")
+            search_submitted = st.form_submit_button("Search")
+            
+            if search_submitted and search_query:
+                # Initialize search-related session state variables if they don't exist
+                if 'search_query' not in st.session_state:
+                    st.session_state.search_query = ""
+                if 'search_results' not in st.session_state:
+                    st.session_state.search_results = []
+                if 'page' not in st.session_state:
+                    st.session_state.page = "home"
+                
+                # Set search query and perform search
+                st.session_state.search_query = search_query
+                
+                # Add to search history
+                if 'search_history' not in st.session_state:
+                    st.session_state.search_history = []
+                if search_query not in st.session_state.search_history:
+                    st.session_state.search_history = [search_query] + st.session_state.search_history[:4]
+                
+                # Perform search with loading indicator
+                with st.spinner("Searching for historical information..."):
+                    try:
+                        results = search_historical_events(search_query)
+                        st.session_state.search_results = results
+                        st.session_state.page = "search_results"
+                    except Exception as e:
+                        st.error(f"Error during search: {str(e)}")
+                        # Provide a fallback result
+                        st.session_state.search_results = [{
+                            "title": "Search error",
+                            "description": f"We encountered an error while searching for '{search_query}'. Please try again.",
+                            "url": "#",
+                            "source": "Error"
+                        }]
+                        st.session_state.page = "search_results"
 
 
 def create_fact_section(date):
@@ -911,7 +943,7 @@ def create_fact_section(date):
                 <div style="flex: 4;">
                     <p class="highlight">Today in History: {date.strftime("%B %d")}, {event['year']} - {event['text']}</p>
                     <div style="margin-top: 10px; font-size: 0.9rem; color: rgba(255,255,255,0.7);">
-                        <i class="fas fa-tag" style="margin-right: 5px;"></i> {category}
+                        <i class="fas fa-tag" style="margin-right: 5px; color: #142231"></i> {category}
                     </div>
                 </div>
             </div>
@@ -968,8 +1000,7 @@ def create_daily_events_section(date):
     if events_by_category:
         # Sort categories to prioritize Indian History if preference is set
         indian_history_preference = st.session_state.get('indian_history_preference', True)
-        sorted_categories = sorted(events_by_category.keys(), 
-                                  key=lambda x: (0 if x == "Indian History" and indian_history_preference else 1, x))
+        sorted_categories = sorted(events_by_category.keys(),key=lambda x: (0 if x == "Indian History" and indian_history_preference else 1, x))
         
         tabs = st.tabs(sorted_categories)
         
@@ -1018,18 +1049,13 @@ def fetch_timeline_events(date):
     # This would be implemented in utils/historical_api.py
     return []
 
-def search_historical_events(query):
-    """Placeholder for search function"""
-    # This would be implemented in utils/historical_api.py
-    return []
-
 def show_favorites():
     """Show user's favorite historical events"""
     add_custom_css()
     add_fontawesome()
     create_header()
     
-    st.markdown("<h2>Your Favorite Historical Events</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color: #142231'>Your Favorite Historical Events </h2>", unsafe_allow_html=True)
     
     if not st.session_state.favorites:
         st.info("You haven't added any favorites yet. Explore historical events to find interesting facts!")
@@ -1064,7 +1090,7 @@ def show_bookmarks():
     add_fontawesome()
     create_header()
     
-    st.markdown("<h2>Your Bookmarked Historical Events</h2>", unsafe_allow_html=True)
+    st.markdown("<h2 style='color: #142231'>Your Bookmarked Historical Events</h2>", unsafe_allow_html=True)
     
     if not st.session_state.bookmarks:
         st.info("You haven't bookmarked any events yet. Explore historical events to bookmark interesting facts!")
@@ -1092,6 +1118,63 @@ def show_bookmarks():
     if st.button("Clear All Bookmarks"):
         st.session_state.bookmarks = []
         st.rerun()
+
+def render_search_results():
+    """Render search results page"""
+    st.markdown(f"<h2 style='color: #142231;'>Search Results for '{st.session_state.search_query}'</h2>", unsafe_allow_html=True)
+    
+    # Add a "Return to Home" button
+    if st.button("Return to Home", key="return_home"):
+        st.session_state.page = "home"
+        st.rerun()
+    
+    # Show search history
+    if 'search_history' in st.session_state and st.session_state.search_history:
+        with st.expander("Recent Searches"):
+            for i, query in enumerate(st.session_state.search_history):
+                if st.button(query, key=f"history_{i}"):
+                    st.session_state.search_query = query
+                    with st.spinner("Searching for historical information..."):
+                        st.session_state.search_results = search_historical_events(query)
+                    st.rerun()
+    
+    # Check if we have search results
+    if not st.session_state.search_results:
+        st.info(f"No historical information found for '{st.session_state.search_query}'. Try a different search term.")
+        
+        # Suggest some historical topics
+        st.markdown("### Try searching for these historical topics:")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if st.button("World War II"):
+                st.session_state.search_query = "World War II"
+                with st.spinner("Searching for historical information..."):
+                    st.session_state.search_results = search_historical_events("World War II")
+                st.rerun()
+        with col2:
+            if st.button("Ancient Egypt"):
+                st.session_state.search_query = "Ancient Egypt"
+                with st.spinner("Searching for historical information..."):
+                    st.session_state.search_results = search_historical_events("Ancient Egypt")
+                st.rerun()
+        with col3:
+            if st.button("Industrial Revolution"):
+                st.session_state.search_query = "Industrial Revolution"
+                with st.spinner("Searching for historical information..."):
+                    st.session_state.search_results = search_historical_events("Industrial Revolution")
+                st.rerun()
+        return
+    
+    # Display each search result
+    for result in st.session_state.search_results:
+        st.markdown(f"""
+        <div class="search-result">
+            <h3>{result['title']}</h3>
+            <p>{result['description']}</p>
+            <p class="search-result-source">Source: {result['source']}</p>
+            <a href="{result['url']}" target="_blank" class="search-result-link">Read More</a>
+        </div>
+        """, unsafe_allow_html=True)
 
 
 def render_settings_page():
@@ -1269,7 +1352,7 @@ def render_about_page():
     ### Version
     
     Current Version: 4.0.0
-    Last Updated: March 2023
+    Last Updated: April 2025
     """)
 
 def main():
@@ -1278,24 +1361,25 @@ def main():
     add_custom_css()
     add_fontawesome()
     
+    # Initialize session state variables if not already set
+    init_dashboard_state()
+    
     # Create header
     create_header()
     
-    # Get the current date from session state
-    date = st.session_state.get('current_date', datetime.now())
+    # Check if we're on the search results page
+    if st.session_state.get('page') == "search_results":
+        render_search_results()
+    else:
+        # Get the current date from session state
+        date = st.session_state.get('current_date', datetime.now())
+        
+        # Create fact section
+        create_fact_section(date)
+        
+        # Create daily events section
+        create_daily_events_section(date)
     
-    # Create fact section
-    create_fact_section(date)
-    
-    # Create daily events section
-    create_daily_events_section(date)
-    
-    # Add theme toggle button
-    st.markdown("""
-    <div class="theme-toggle" onclick="document.body.classList.toggle('dark-mode');">
-        <i class="fas fa-moon"></i>
-    </div>
-    """, unsafe_allow_html=True)
 
 # Initialize necessary session state variables
 def init_dashboard_state():
@@ -1310,3 +1394,27 @@ def init_dashboard_state():
         st.session_state.indian_history_preference = True
     if 'categories_expanded' not in st.session_state:
         st.session_state.categories_expanded = {}
+    if 'search_query' not in st.session_state:
+        st.session_state.search_query = ""
+    if 'search_results' not in st.session_state:
+        st.session_state.search_results = []
+    if 'page' not in st.session_state:
+        st.session_state.page = "home"
+    if 'favorites' not in st.session_state:
+        st.session_state.favorites = []
+    if 'bookmarks' not in st.session_state:
+        st.session_state.bookmarks = []
+    if 'search_history' not in st.session_state:
+        st.session_state.search_history = []
+
+# Function to save user data (favorites, bookmarks, settings)
+def save_data():
+    """Save user data to session state"""
+    # This is a placeholder function
+    # In a real application, you might save to a database or file
+    pass
+
+# Run the main
+# Run the main function
+if __name__ == "__main__":
+    main()
